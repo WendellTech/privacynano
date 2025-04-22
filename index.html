@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PrivacyNano - Synthetic Personal Data Generator</title>
+  <style>
+    :root {
+      --primary: #4361ee;
+      --primary-light: #4895ef;
+      --primary-dark: #3f37c9;
+      --success: #4cc9f0;
+      --danger: #f72585;
+      --warning: #f8961e;
+      --info: #90e0ef;
+      --text: #333333;
+      --text-light: #666666;
+      --bg: #ffffff;
+      --bg-alt: #f8f9fa;
+      --surface: #ffffff;
+      --border: #e0e0e0;
+      --shadow: rgba(0, 0, 0, 0.1);
+    }
+
+    .dark-theme {
+      --primary: #4cc9f0;
+      --primary-light: #4895ef;
+      --primary-dark: #3f37c9;
+      --success: #4361ee;
+      --danger: #f72585;
+      --warning: #f8961e;
+      --info: #90e0ef;
+      --text: #e0e0e0;
+      --text-light: #b0b0b0;
+      --bg: #121212;
+      --bg-alt: #1e1e1e;
+      --surface: #242424;
+      --border: #444444;
+      --shadow: rgba(0, 0, 0, 0.4);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    header {
+      background-color: var(--primary);
+      color: white;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 4px var(--shadow);
+    }
+
+    .app-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      margin-right: 0.5rem;
+    }
+
+    .theme-toggle {
+      display: flex;
+      align-items: center;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 30px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--surface);
+      transition: .4s;
+      border-radius: 30px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 22px;
+      width: 22px;
+      left: 4px;
+      bottom: 4px;
+      background-color: var(--primary);
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: var(--text-light);
+    }
+
+    input:focus + .slider {
+      box-shadow: 0 0 1px var(--primary);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(30px);
+      background-color: var(--primary-dark); /* Dark mode slider knob */
+    }
+
+    .theme-icon {
+      margin: 0 8px;
+      font-size: 1.2rem;
+    }
+
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .card {
+      background-color: var(--surface);
+      border-radius: 8px;
+      box-shadow: 0 4px 6px var(--shadow);
+      padding: 1.5rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px var(--shadow);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .data-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+    }
+
+    .data-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .field-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .field-label {
+      font-weight: 600;
+      color: var(--text-light);
+      font-size: 0.9rem;
+    }
+
+    .field-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .field-value {
+      padding: 0.75rem;
+      background-color: var(--bg-alt);
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      color: var(--text);
+      min-height: 40px; /* Consistent height */
+      word-break: break-all;
+      font-family: monospace; /* Better for fixed-width data */
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+    }
+
+    .dropdown-container {
+      position: relative;
+      width: 100%;
+      margin-bottom: 0.5rem;
+    }
+
+    .dropdown {
+      width: 100%;
+      padding: 0.5rem;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background-color: var(--bg-alt);
+      color: var(--text);
+      cursor: pointer;
+      appearance: none;
+      background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23${(document.body.classList.contains('dark-theme') ? 'e0e0e0' : '333333').substring(1)}%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
+      background-repeat: no-repeat;
+      background-position: right .7em top 50%, 0 0;
+      background-size: .65em auto, 100%;
+      padding-right: 2em;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+      font-weight: 500;
+      display: inline-flex; /* Changed from flex to inline-flex */
+      align-items: center;
+      gap: 0.25rem;
+      white-space: nowrap; /* Prevent wrapping */
+    }
+    
+    button:active {
+        transform: scale(0.98);
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-dark);
+    }
+
+    .btn-secondary {
+      background-color: var(--bg-alt);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background-color: var(--border);
+    }
+
+    .btn-icon {
+      padding: 0.5rem;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      line-height: 1; /* Ensure icon is centered vertically */
+      width: 32px; /* Fixed width */
+      height: 32px; /* Fixed height */
+    }
+
+    .btn-sm {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.875rem;
+      width: auto; /* Override fixed width for non-icon small buttons */
+      height: auto; /* Override fixed height */
+    }
+    
+    .btn-icon.btn-sm {
+        font-size: 0.8rem;
+        width: 28px;
+        height: 28px;
+    }
+
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      align-items: center;
+    }
+
+    .export-options {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .checkbox-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem 1.5rem; /* More horizontal space */
+      margin: 1rem 0;
+    }
+
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer; /* Make label clickable */
+    }
+
+    .checkbox-item input {
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
+    footer {
+      text-align: center;
+      padding: 1rem;
+      margin-top: 2rem;
+      color: var(--text-light);
+      font-size: 0.875rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 0.75rem 1.5rem;
+      background-color: var(--success);
+      color: white;
+      border-radius: 4px;
+      box-shadow: 0 4px 8px var(--shadow);
+      opacity: 0;
+      transform: translateY(10px); /* Start slightly down */
+      transition: opacity 0.3s, transform 0.3s;
+      z-index: 1000;
+      pointer-events: none; /* Prevent interaction */
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0); /* Move to final position */
+    }
+
+    @media (max-width: 768px) {
+      .data-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .controls {
+        flex-direction: column;
+        align-items: stretch; /* Make buttons full width */
+      }
+
+      .export-options {
+        margin-top: 0.5rem;
+        justify-content: space-around; /* Better spacing on mobile */
+      }
+       .export-options button {
+           flex-grow: 1; /* Allow buttons to grow */
+       }
+
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+      .theme-toggle {
+          align-self: flex-end; /* Move toggle to the right */
+      }
+    }
+
+    @media (max-width: 480px) {
+        .card-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+        .card-actions {
+            align-self: flex-end;
+        }
+        .field-header {
+             align-items: flex-start; /* Align label top left */
+        }
+        .field-actions {
+            margin-top: -2px; /* Adjust alignment */
+        }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="app-title">
+      <div class="logo">🔒</div>
+      <h1>PrivacyNano</h1>
+    </div>
+    <div class="theme-toggle">
+      <span class="theme-icon">☀️</span>
+      <label class="switch">
+        <input type="checkbox" id="theme-switch">
+        <span class="slider"></span>
+      </label>
+      <span class="theme-icon">🌙</span>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      <section class="card">
+        <div class="card-header">
+          <h2 class="card-title">Data Generation Options</h2>
+        </div>
+
+        <div class="checkbox-group">
+          <label class="checkbox-item">
+            <input type="checkbox" id="include-ssn" checked>
+            <span>Social Security Number</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" id="include-cc" checked>
+            <span>Credit Card</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" id="include-dl">
+            <span>Driver's License</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" id="include-passport">
+            <span>Passport</span>
+          </label>
+        </div>
+
+        <div class="controls">
+          <button id="generate-btn" class="btn-primary">
+            <span>🔄 Generate New Profile</span>
+          </button>
+
+          <div class="export-options">
+            <button id="export-txt" class="btn-secondary">
+              <span>Export TXT</span>
+            </button>
+            <button id="export-json" class="btn-secondary">
+              <span>Export JSON</span>
+            </button>
+            <button id="export-html" class="btn-secondary">
+              <span>Export HTML</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" id="profile-card">
+        <div class="card-header">
+          <h2 class="card-title">Generated Profile</h2>
+          <div class="card-actions">
+            <button id="copy-all" class="btn-secondary btn-sm">
+              <span>📋 Copy All</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="data-grid" id="data-container">
+          <!-- Basic Information -->
+          <div class="data-field">
+            <div class="field-header">
+              <span class="field-label">Full Name</span>
+              <div class="field-actions">
+                <button class="btn-secondary btn-icon btn-sm refresh-field" data-field="name" title="Refresh Name">↻</button>
+                <button class="btn-secondary btn-icon btn-sm copy-field" data-field="name" title="Copy Name">📋</button>
+              </div>
+            </div>
+            <div class="field-value" id="name">Generating...</div>
+          </div>
+
+          <div class="data-field">
+            <div class="field-header">
+              <span class="field-label">Date of Birth</span>
+              <div class="field-actions">
+                <button class="btn-secondary btn-icon btn-sm refresh-field" data-field="dob" title="Refresh DOB">↻</button>
+                <button class="btn-secondary btn-icon btn-sm copy-field" data-field="dob" title="Copy DOB">📋</button>
+              </div>
+            </div>
+            <div class="field-value" id="dob">Generating...</div>
+          </div>
+
+          <!-- Contact Information -->
+          <div class="data-field">
+            <div class="field-header">
+              <span class="field-label">Email Address</span>
+              <div class="field-actions">
+                <button class="btn-secondary btn-icon btn-sm refresh-field" data-field="email" title="Refresh Email">↻</button>
+                <button class="btn-secondary btn-icon btn-sm copy-field" data-field="email" title="Copy Email">📋</button>
+              </div>
+            </div>
+            <div class="field-value" id="email">Generating...</div>
+          </div>
+
+          <div class="data-field">
+            <div class="field-header">
+              <span class="field-label">Phone Number</span>
+              <div class="field-actions">
+                <button class="btn-secondary btn-icon btn-sm refresh-field" data-field="phone" title="Refresh Phone">↻</button>
+                <button class="btn-secondary btn-icon btn-sm copy-field" data-field="phone" title="Copy Phone">📋</button>
+              </div>
+            </div>
+            <div class="field-value" id="phone">Generating...</div>
+          </div>
+
+          <!-- Address -->
+          <div class="data-field">
+            <div class="field-header">
+              <span class="field-label">Address</span>
+              <div class="field-actions">
+                <button class="btn-secondary btn-icon btn-sm refresh-field" data-field="address" title="Refresh Address">↻</button>
+                <button class="btn-secondary btn-icon btn-sm copy-field" data-field="address" title="Copy Address">📋</button>
+              </div>
+            </div>
+            <div class="field-value" id="address" style="min-height: 60px;">Generating...</div>
+          </div>
+
+          <!-- SSN -->
+          <div class="data-field" id="ssn-field">
+            <div class="field-header">
+              <span class="field-label">Social Security Number</span>
+              <div class="field-actions">
+                <button class="btn-secondary btn-icon btn-sm refresh-field" data-field="ssn" title="Refresh SSN">↻</button>
+                <button class="btn-secondary btn-icon btn-sm copy-field" data-field="ssn" title="Copy SSN">📋</button>
+              </div>
+            </div>
+            <div class="field-value" id="ssn">Generating...</div>
+          </div>
+
+          <!-- Credit Card -->
+          <div class="data-field" id="cc-field">
+            <div class="field-header">
+              <span class="field-label">Credit Card</span>
+              <div class="field-actions">
+                <button class="btn-secondary btn-icon btn-sm refresh-field" data-field="cc" title="Refresh Credit Card">↻</button>
+                <button class="btn-secondary btn-icon btn-sm copy-field" data-field="cc" title="Copy Credit Card">📋</button>
+              </div>
+            </div>
+            <div class="dropdown-container">
+              <select id="cc-type" class="dropdown">
+                <option value="visa">Visa</option>
+                <option value="mastercard">Mastercard</option>
+                <option value="amex">American Express</option>
+                <option value="discover">Discover</option>
+              </select>
+            </div>
+            <div class="field-value" id="cc" style="min-height: 60px;">Generating...</div>
+          </div>
+
+          <!-- Driver's License -->
+          <div class="data-field" id="dl-field" style="display: none;">
+            <div class="field-header">
+              <span class="field-label">Driver's License</span>
+              <div class="field-actions">
+                <button class="btn-secondary btn-icon btn-sm refresh-field" data-field="dl" title="Refresh Driver's License">↻</button>
+                <button class="btn-secondary btn-icon btn-sm copy-field" data-field="dl" title="Copy Driver's License">📋</button>
+              </div>
+            </div>
+            <div class="dropdown-container">
+              <select id="dl-state" class="dropdown">
+                <option value="CA">California</option>
+                <option value="TX">Texas</option>
+                <option value="NY">New York</option>
+                <option value="FL">Florida</option>
+                <option value="IL">Illinois</option>
+                <option value="PA">Pennsylvania</option>
+                <option value="WA">Washington</option>
+              </select>
+            </div>
+            <div class="field-value" id="dl">Generating...</div>
+          </div>
+
+          <!-- Passport -->
+          <div class="data-field" id="passport-field" style="display: none;">
+            <div class="field-header">
+              <span class="field-label">Passport Number</span>
+              <div class="field-actions">
+                <button class="btn-secondary btn-icon btn-sm refresh-field" data-field="passport" title="Refresh Passport">↻</button>
+                <button class="btn-secondary btn-icon btn-sm copy-field" data-field="passport" title="Copy Passport">📋</button>
+              </div>
+            </div>
+            <div class="dropdown-container">
+              <select id="passport-country" class="dropdown">
+                <option value="US">United States</option>
+                <option value="CA">Canada</option>
+                <option value="GB">United Kingdom</option>
+                <option value="AU">Australia</option>
+                <option value="DE">Germany</option>
+                <option value="FR">France</option>
+              </select>
+            </div>
+            <div class="field-value" id="passport">Generating...</div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <p>PrivacyNano © 2025 | All generated data is synthetic and for demonstration purposes only.</p>
+    <p>This tool does not generate real PII and should not be used for illegal activities.</p>
+  </footer>
+
+  <div class="toast" id="toast">Copied!</div>
+
+  <script>
+    // --------------------------
+    // DOM Element References
+    // --------------------------
+    const themeSwitch = document.getElementById('theme-switch');
+    const generateBtn = document.getElementById('generate-btn');
+    const copyAllBtn = document.getElementById('copy-all');
+    const exportTxtBtn = document.getElementById('export-txt');
+    const exportJsonBtn = document.getElementById('export-json');
+    const exportHtmlBtn = document.getElementById('export-html');
+    const toastElement = document.getElementById('toast');
+    const dataContainer = document.getElementById('data-container');
+
+    const includeSsnCheckbox = document.getElementById('include-ssn');
+    const includeCcCheckbox = document.getElementById('include-cc');
+    const includeDlCheckbox = document.getElementById('include-dl');
+    const includePassportCheckbox = document.getElementById('include-passport');
+
+    const ssnFieldElement = document.getElementById('ssn-field');
+    const ccFieldElement = document.getElementById('cc-field');
+    const dlFieldElement = document.getElementById('dl-field');
+    const passportFieldElement = document.getElementById('passport-field');
+
+    const ccTypeDropdown = document.getElementById('cc-type');
+    const dlStateDropdown = document.getElementById('dl-state');
+    const passportCountryDropdown = document.getElementById('passport-country');
+
+    // --------------------------
+    // Theme Switcher Functionality
+    // --------------------------
+    const applyTheme = (isDark) => {
+        document.body.classList.toggle('dark-theme', isDark);
+        // Update dropdown arrow color
+        const dropdowns = document.querySelectorAll('.dropdown');
+        dropdowns.forEach(dropdown => {
+            const color = isDark ? 'e0e0e0' : '333333';
+            dropdown.style.backgroundImage = `url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23${color}%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')`;
+        });
+    };
+
+    // Check for saved theme preference
+    const savedTheme = localStorage.getItem('darkTheme');
+    if (savedTheme === 'true') {
+        themeSwitch.checked = true;
+        applyTheme(true);
+    } else {
+        applyTheme(false);
+    }
+
+    themeSwitch.addEventListener('change', () => {
+      const isDark = themeSwitch.checked;
+      applyTheme(isDark);
+      localStorage.setItem('darkTheme', isDark ? 'true' : 'false');
+    });
+
+    // --------------------------
+    // Data Generation Logic
+    // --------------------------
+
+    // Global store for current profile data
+    let currentProfile = {};
+
+    // Utility Functions
+    const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+    const getRandomElement = (array) => array[Math.floor(Math.random() * array.length)];
+    const padZero = (num, places) => String(num).padStart(places, '0');
+    const randomChar = (chars) => chars[Math.floor(Math.random() * chars.length)];
+    const randomDigits = (length) => Array.from({ length }, () => getRandomInt(0, 9)).join('');
+    const randomLetters = (length) => Array.from({ length }, () => randomChar('ABCDEFGHIJKLMNOPQRSTUVWXYZ')).join('');
+    const randomAlphanumeric = (length) => Array.from({ length }, () => randomChar('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')).join('');
+
+
+    // Name Generation (Data reused from initial code)
+    const firstNames = ['James', 'Mary', 'John', 'Patricia', 'Robert', 'Jennifer', 'Michael', 'Linda', 'William', 'Elizabeth','David', 'Barbara', 'Richard', 'Susan', 'Joseph', 'Jessica', 'Thomas', 'Sarah', 'Charles', 'Karen','Emma', 'Olivia', 'Noah', 'Liam', 'Sophia', 'Ava', 'Mia', 'Isabella', 'Riley', 'Aria','Zoe', 'Charlotte', 'Lily', 'Amelia', 'Harper', 'Evelyn', 'Abigail', 'Emily', 'Ella', 'Scarlett','Sofia', 'Avery', 'Mila', 'Camila', 'Aria', 'Luna', 'Penelope', 'Elena', 'Victoria', 'Grace'];
+    const lastNames = ['Smith', 'Johnson', 'Williams', 'Jones', 'Brown', 'Davis', 'Miller', 'Wilson', 'Moore', 'Taylor','Anderson', 'Thomas', 'Jackson', 'White', 'Harris', 'Martin', 'Thompson', 'Garcia', 'Martinez', 'Robinson','Clark', 'Rodriguez', 'Lewis', 'Lee', 'Walker', 'Hall', 'Allen', 'Young', 'Hernandez', 'King','Wright', 'Lopez', 'Hill', 'Scott', 'Green', 'Adams', 'Baker', 'Gonzalez', 'Nelson', 'Carter','Mitchell', 'Perez', 'Roberts', 'Turner', 'Phillips', 'Campbell', 'Parker', 'Evans', 'Edwards', 'Collins'];
+    const middleInitials = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+    // Address Generation (Data reused from initial code)
+    const streetTypes = ['St', 'Ave', 'Blvd', 'Dr', 'Ln', 'Rd', 'Ct', 'Way', 'Pl', 'Terrace'];
+    const streetNames = ['Main', 'Oak', 'Pine', 'Maple', 'Cedar', 'Elm', 'Washington', 'Park', 'Lake', 'Hill','River', 'View', 'Highland', 'Sunset', 'Meadow', 'Forest', 'Spring', 'Valley', 'Ridge', 'Broadway','Market', 'Church', 'Mill', 'Bridge', 'Central', 'Grove', 'Chestnut', 'Walnut', 'Willow', 'Center'];
+    const cities = [{ name: 'New York', state: 'NY', zip: ['10001', '10002', '10003', '10004', '10005'] },{ name: 'Los Angeles', state: 'CA', zip: ['90001', '90002', '90003', '90004', '90005'] },{ name: 'Chicago', state: 'IL', zip: ['60601', '60602', '60603', '60604', '60605'] },{ name: 'Houston', state: 'TX', zip: ['77001', '77002', '77003', '77004', '77005'] },{ name: 'Phoenix', state: 'AZ', zip: ['85001', '85002', '85003', '85004', '85005'] },{ name: 'Philadelphia', state: 'PA', zip: ['19101', '19102', '19103', '19104', '19105'] },{ name: 'San Antonio', state: 'TX', zip: ['78201', '78202', '78203', '78204', '78205'] },{ name: 'San Diego', state: 'CA', zip: ['92101', '92102', '92103', '92104', '92105'] },{ name: 'Dallas', state: 'TX', zip: ['75201', '75202', '75203', '75204', '75205'] },{ name: 'San Jose', state: 'CA', zip: ['95101', '95102', '95103', '95104', '95105'] },{ name: 'Seattle', state: 'WA', zip: ['98101', '98102', '98103', '98104', '98105'] },{ name: 'Denver', state: 'CO', zip: ['80201', '80202', '80203', '80204', '80205'] },{ name: 'Boston', state: 'MA', zip: ['02101', '02102', '02103', '02104', '02105'] },{ name: 'Atlanta', state: 'GA', zip: ['30301', '30302', '30303', '30304', '30305'] },{ name: 'Miami', state: 'FL', zip: ['33101', '33102', '33103', '33104', '33105'] }];
+    const domains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'icloud.com', 'aol.com', 'protonmail.com', 'mail.com'];
+
+    // --- Individual Field Generators ---
+
+    const generateName = () => {
+      const firstName = getRandomElement(firstNames);
+      const lastName = getRandomElement(lastNames);
+      const useMiddle = Math.random() > 0.7;
+      if (useMiddle) {
+        const middleInitial = getRandomElement(middleInitials);
+        return `${firstName} ${middleInitial}. ${lastName}`;
+      }
+      return `${firstName} ${lastName}`;
+    };
+
+    const generateDOB = () => {
+      const now = new Date();
+      const year = now.getFullYear() - getRandomInt(18, 85);
+      const month = getRandomInt(1, 12);
+      const daysInMonth = new Date(year, month, 0).getDate();
+      const day = getRandomInt(1, daysInMonth);
+      return `${padZero(month, 2)}/${padZero(day, 2)}/${year}`;
+    };
+
+    const generateEmail = (name) => {
+      const nameParts = name.toLowerCase().replace('.', '').split(' ');
+      const firstName = nameParts[0];
+      const lastName = nameParts[nameParts.length - 1];
+      const formats = [
+        `${firstName}${lastName}`, `${firstName}.${lastName}`, `${firstName}${getRandomInt(1, 999)}`,
+        `${firstName}${lastName}${getRandomInt(1, 99)}`, `${firstName[0]}${lastName}`, `${firstName}.${lastName}${getRandomInt(1, 99)}`
+      ];
+      const username = getRandomElement(formats);
+      const domain = getRandomElement(domains);
+      return `${username}@${domain}`;
+    };
+
+    const generatePhone = () => {
+      const areaCode = getRandomInt(201, 999).toString();
+      const prefix = getRandomInt(200, 999).toString().padStart(3, '0'); // Ensure 3 digits
+      const lineNumber = getRandomInt(1000, 9999).toString().padStart(4, '0'); // Ensure 4 digits
+      return `(${areaCode}) ${prefix}-${lineNumber}`;
+    };
+
+    const generateAddress = () => {
+      const streetNumber = getRandomInt(1, 9999);
+      const streetName = getRandomElement(streetNames);
+      const streetType = getRandomElement(streetTypes);
+      const cityInfo = getRandomElement(cities);
+      const zipCode = getRandomElement(cityInfo.zip);
+      return {
+        street: `${streetNumber} ${streetName} ${streetType}`,
+        city: cityInfo.name,
+        state: cityInfo.state,
+        zip: zipCode,
+        country: 'USA',
+        full: `${streetNumber} ${streetName} ${streetType}\n${cityInfo.name}, ${cityInfo.state} ${zipCode}\nUSA`
+      };
+    };
+
+    const generateSSN = () => {
+      const area = getRandomInt(100, 899).toString(); // Exclude 000, 666, 900-999
+      if (area === '666') return generateSSN(); // Regenerate if 666
+      const group = getRandomInt(1, 99).toString().padStart(2, '0');
+      const serial = getRandomInt(1, 9999).toString().padStart(4, '0');
+      return `${area}-${group}-${serial}`;
+    };
+
+    // --- Credit Card Generation ---
+    const luhnCheck = (num) => {
+        let arr = (num + '')
+            .split('')
+            .reverse()
+            .map(x => parseInt(x));
+        let lastDigit = arr.splice(0, 1)[0];
+        let sum = arr.reduce((acc, val, i) => (i % 2 !== 0 ? acc + val : acc + ((val * 2) % 9) || 9), 0);
+        sum += lastDigit;
+        return sum % 10 === 0;
+    };
+
+    const generateValidCCNumber = (prefix, length) => {
+      let ccNumber = prefix;
+      while (ccNumber.length < length - 1) {
+        ccNumber += Math.floor(Math.random() * 10);
+      }
+      // Calculate check digit
+      let sum = 0;
+      let shouldDouble = true;
+      for (let i = ccNumber.length - 1; i >= 0; i--) {
+          let digit = parseInt(ccNumber.charAt(i));
+          if (shouldDouble) {
+              digit *= 2;
+              if (digit > 9) digit -= 9;
+          }
+          sum += digit;
+          shouldDouble = !shouldDouble;
+      }
+      const checkDigit = (10 - (sum % 10)) % 10;
+      ccNumber += checkDigit;
+      return ccNumber;
+    };
+
+    const formatCreditCard = (number, type) => {
+      if (type === 'amex') { // 4-6-5
+        return `${number.substring(0, 4)} ${number.substring(4, 10)} ${number.substring(10)}`;
+      }
+      // Default 4-4-4-4
+      return number.match(/.{1,4}/g)?.join(' ') || number;
+    };
+
+    const generateCreditCard = (type) => {
+        let prefixList, length, cvvLength;
+        switch (type) {
+            case 'mastercard':
+                prefixList = ['51', '52', '53', '54', '55'];
+                length = 16;
+                cvvLength = 3;
+                break;
+            case 'amex':
+                prefixList = ['34', '37'];
+                length = 15;
+                cvvLength = 4;
+                break;
+            case 'discover':
+                prefixList = ['6011', '622', '64', '65'];
+                length = 16;
+                cvvLength = 3;
+                break;
+            case 'visa':
+            default: // Default to Visa
+                prefixList = ['4'];
+                length = 16;
+                cvvLength = 3;
+                break;
+        }
+
+        const prefix = getRandomElement(prefixList);
+        const number = generateValidCCNumber(prefix, length);
+        const formattedNumber = formatCreditCard(number, type);
+        const cvv = randomDigits(cvvLength);
+        const now = new Date();
+        const expYear = now.getFullYear() + getRandomInt(2, 6); // Expire in 2-6 years
+        const expMonth = getRandomInt(1, 12);
+
+        return {
+            type: type.charAt(0).toUpperCase() + type.slice(1),
+            number: number,
+            formatted: formattedNumber,
+            exp: `${padZero(expMonth, 2)}/${expYear.toString().slice(-2)}`, // MM/YY
+            cvv: cvv,
+            full: `${formattedNumber}\nExp: ${padZero(expMonth, 2)}/${expYear.toString().slice(-2)} CVV: ${cvv}`
+        };
+    };
+
+    // --- Driver's License Generation ---
+    const generateDL = (state) => {
+        let format;
+        switch(state) {
+            case 'CA': format = randomChar('ABCDEFGHIJKLMNOPQRSTUVWXYZ') + randomDigits(7); break; // 1 letter, 7 digits
+            case 'TX': format = randomDigits(8); break; // 8 digits
+            case 'NY': format = randomDigits(9); break; // 9 digits (simplified)
+            case 'FL': format = randomChar('ABCDEFGHIJKLMNOPQRSTUVWXYZ') + randomDigits(12); break; // 1 letter, 12 digits (simplified)
+            case 'IL': format = randomChar('ABCDEFGHIJKLMNOPQRSTUVWXYZ') + randomDigits(11); break; // 1 letter, 11 digits
+            case 'PA': format = randomDigits(8); break; // 8 digits
+            case 'WA': format = randomLetters(7) + randomAlphanumeric(5); break; // Complex, simplified: 7 letters + 5 alphanumeric
+            default: format = randomAlphanumeric(10); // Default fallback
+        }
+        return format;
+    };
+
+    // --- Passport Generation ---
+    const generatePassport = (country) => {
+        let format;
+        switch(country) {
+            case 'US': format = randomDigits(9); break; // 9 digits
+            case 'CA': format = randomLetters(2) + randomDigits(6); break; // 2 letters, 6 digits
+            case 'GB': format = randomDigits(9); break; // 9 digits
+            case 'AU': format = randomChar('ELN') + randomDigits(8); break; // 1 letter (E, L, N), 8 digits
+            case 'DE': format = randomAlphanumeric(9); break; // 9 alphanumeric (simplified)
+            case 'FR': format = randomDigits(2) + randomLetters(2) + randomDigits(5); break; // 2 digits, 2 letters, 5 digits
+            default: format = randomAlphanumeric(9); // Default fallback
+        }
+        return format;
+    };
+
+
+    // --- Profile Generation Orchestrator ---
+    const generateProfile = () => {
+        const name = generateName();
+        const dob = generateDOB();
+        const email = generateEmail(name);
+        const phone = generatePhone();
+        const address = generateAddress();
+
+        currentProfile = {
+            name: name,
+            dob: dob,
+            email: email,
+            phone: phone,
+            address: address.full, // Store the formatted full address
+            _addressObj: address // Store the object for potential future use
+        };
+
+        if (includeSsnCheckbox.checked) {
+            currentProfile.ssn = generateSSN();
+        }
+        if (includeCcCheckbox.checked) {
+            const ccType = ccTypeDropdown.value;
+            currentProfile.cc = generateCreditCard(ccType).full; // Store formatted full CC info
+            currentProfile._ccObj = generateCreditCard(ccType); // Store obj if needed
+        }
+        if (includeDlCheckbox.checked) {
+            const dlState = dlStateDropdown.value;
+            currentProfile.dl = generateDL(dlState);
+        }
+        if (includePassportCheckbox.checked) {
+            const passportCountry = passportCountryDropdown.value;
+            currentProfile.passport = generatePassport(passportCountry);
+        }
+
+        updateUI();
+    };
+
+    // --- Update UI ---
+    const updateUI = () => {
+        document.getElementById('name').textContent = currentProfile.name || 'N/A';
+        document.getElementById('dob').textContent = currentProfile.dob || 'N/A';
+        document.getElementById('email').textContent = currentProfile.email || 'N/A';
+        document.getElementById('phone').textContent = currentProfile.phone || 'N/A';
+        document.getElementById('address').innerHTML = (currentProfile.address || 'N/A').replace(/\n/g, '<br>'); // Handle multiline
+
+        // Optional fields
+        ssnFieldElement.style.display = includeSsnCheckbox.checked ? 'flex' : 'none';
+        if (includeSsnCheckbox.checked) {
+            document.getElementById('ssn').textContent = currentProfile.ssn || 'N/A';
+        }
+
+        ccFieldElement.style.display = includeCcCheckbox.checked ? 'flex' : 'none';
+        if (includeCcCheckbox.checked) {
+            document.getElementById('cc').innerHTML = (currentProfile.cc || 'N/A').replace(/\n/g, '<br>'); // Handle multiline
+        }
+
+        dlFieldElement.style.display = includeDlCheckbox.checked ? 'flex' : 'none';
+        if (includeDlCheckbox.checked) {
+            document.getElementById('dl').textContent = currentProfile.dl || 'N/A';
+        }
+
+        passportFieldElement.style.display = includePassportCheckbox.checked ? 'flex' : 'none';
+        if (includePassportCheckbox.checked) {
+            document.getElementById('passport').textContent = currentProfile.passport || 'N/A';
+        }
+    };
+
+    // --- Regenerate Specific Field ---
+    const regenerateField = (fieldName) => {
+        switch (fieldName) {
+            case 'name':
+                currentProfile.name = generateName();
+                // Regenerate email if name changes? Optional.
+                // currentProfile.email = generateEmail(currentProfile.name);
+                // document.getElementById('email').textContent = currentProfile.email;
+                break;
+            case 'dob': currentProfile.dob = generateDOB(); break;
+            case 'email': currentProfile.email = generateEmail(currentProfile.name || 'Jane Doe'); break; // Use current name or default
+            case 'phone': currentProfile.phone = generatePhone(); break;
+            case 'address':
+                const address = generateAddress();
+                currentProfile.address = address.full;
+                currentProfile._addressObj = address;
+                break;
+            case 'ssn':
+                if (includeSsnCheckbox.checked) currentProfile.ssn = generateSSN();
+                break;
+            case 'cc':
+                if (includeCcCheckbox.checked) {
+                    const ccType = ccTypeDropdown.value;
+                    const ccData = generateCreditCard(ccType);
+                    currentProfile.cc = ccData.full;
+                    currentProfile._ccObj = ccData;
+                }
+                break;
+            case 'dl':
+                if (includeDlCheckbox.checked) {
+                    const dlState = dlStateDropdown.value;
+                    currentProfile.dl = generateDL(dlState);
+                }
+                break;
+            case 'passport':
+                if (includePassportCheckbox.checked) {
+                    const passportCountry = passportCountryDropdown.value;
+                    currentProfile.passport = generatePassport(passportCountry);
+                }
+                break;
+        }
+        updateUI(); // Refresh the entire UI to reflect the change
+    };
+
+    // --------------------------
+    // Helper Functions
+    // --------------------------
+
+    // --- Copy to Clipboard ---
+    const copyToClipboard = (text) => {
+        if (!navigator.clipboard) {
+            // Fallback for older browsers
+            try {
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                textArea.style.position = "fixed"; // Avoid scrolling to bottom
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showToast("Copied (fallback method)!");
+            } catch (err) {
+                showToast("Failed to copy!", true);
+                console.error('Fallback: Oops, unable to copy', err);
+            }
+            return;
+        }
+        navigator.clipboard.writeText(text).then(() => {
+            showToast("Copied!");
+        }).catch(err => {
+            showToast("Failed to copy!", true);
+            console.error('Async: Could not copy text: ', err);
+        });
+    };
+
+    // --- Show Toast Notification ---
+    let toastTimeout;
+    const showToast = (message = "Copied!", isError = false) => {
+        clearTimeout(toastTimeout);
+        toastElement.textContent = message;
+        toastElement.style.backgroundColor = isError ? 'var(--danger)' : 'var(--success)';
+        toastElement.classList.add('show');
+        toastTimeout = setTimeout(() => {
+            toastElement.classList.remove('show');
+        }, 2000); // Show for 2 seconds
+    };
+
+    // --- Download Function ---
+    const downloadFile = (filename, content, mimeType) => {
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
+    // --- Format Data for Export ---
+    const formatProfileForExport = (format) => {
+        let output = "";
+        const profile = currentProfile; // Use the global profile data
+
+        const fields = [
+            { label: 'Full Name', key: 'name' },
+            { label: 'Date of Birth', key: 'dob' },
+            { label: 'Email Address', key: 'email' },
+            { label: 'Phone Number', key: 'phone' },
+            { label: 'Address', key: 'address' }, // Use the pre-formatted multiline string
+            { label: 'Social Security Number', key: 'ssn', checkbox: includeSsnCheckbox },
+            { label: 'Credit Card', key: 'cc', checkbox: includeCcCheckbox },
+            { label: 'Driver\'s License', key: 'dl', checkbox: includeDlCheckbox },
+            { label: 'Passport Number', key: 'passport', checkbox: includePassportCheckbox },
+        ];
+
+        if (format === 'txt') {
+            output += "PrivacyNano Generated Profile\n";
+            output += "=============================\n\n";
+            fields.forEach(field => {
+                if ((!field.checkbox || field.checkbox.checked) && profile[field.key]) {
+                    output += `${field.label}:\n${profile[field.key]}\n\n`;
+                }
+            });
+            output += "\nGenerated: " + new Date().toLocaleString();
+        } else if (format === 'html') {
+            output += `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>PrivacyNano Profile</title>`;
+            output += `<style>body{font-family: sans-serif; line-height: 1.5;} strong{display: block; margin-top: 1em; color: #333;} pre{background: #f4f4f4; padding: 0.5em; border-radius: 3px; white-space: pre-wrap; word-wrap: break-word;}</style>`;
+            output += `</head><body><h1>PrivacyNano Generated Profile</h1>`;
+            fields.forEach(field => {
+                if ((!field.checkbox || field.checkbox.checked) && profile[field.key]) {
+                    output += `<strong>${field.label}:</strong><pre>${profile[field.key]}</pre>\n`;
+                }
+            });
+            output += `<p><small>Generated: ${new Date().toLocaleString()}</small></p></body></html>`;
+        } else if (format === 'json') {
+            const exportData = {};
+             fields.forEach(field => {
+                if ((!field.checkbox || field.checkbox.checked) && profile[field.key]) {
+                    // Use original object for address and CC if available for better structure
+                    if (field.key === 'address' && profile._addressObj) {
+                        exportData[field.key] = profile._addressObj;
+                    } else if (field.key === 'cc' && profile._ccObj) {
+                         exportData[field.key] = profile._ccObj;
+                    }
+                    else {
+                        exportData[field.key] = profile[field.key];
+                    }
+                }
+            });
+            exportData.generatedAt = new Date().toISOString();
+            output = JSON.stringify(exportData, null, 2); // Pretty print JSON
+        }
+        return output;
+    };
+
+
+    // --------------------------
+    // Event Listeners
+    // --------------------------
+
+    // Generate Button
+    generateBtn.addEventListener('click', generateProfile);
+
+    // Checkbox Changes
+    [includeSsnCheckbox, includeCcCheckbox, includeDlCheckbox, includePassportCheckbox].forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+            // Option 1: Regenerate the whole profile to ensure consistency (e.g., email based on name)
+            // generateProfile();
+
+            // Option 2: Just update visibility and generate the specific field if it's being enabled
+            const fieldId = checkbox.id.replace('include-', '');
+            const fieldElement = document.getElementById(`${fieldId}-field`);
+            if (fieldElement) {
+                 fieldElement.style.display = checkbox.checked ? 'flex' : 'none';
+            }
+            if (checkbox.checked && !currentProfile[fieldId]) {
+                // Generate only the newly checked field if it doesn't exist yet
+                regenerateField(fieldId);
+            } else {
+                 updateUI(); // Just update visibility
+            }
+        });
+    });
+
+    // Dropdown Changes (regenerate specific field)
+    ccTypeDropdown.addEventListener('change', () => { if (includeCcCheckbox.checked) regenerateField('cc'); });
+    dlStateDropdown.addEventListener('change', () => { if (includeDlCheckbox.checked) regenerateField('dl'); });
+    passportCountryDropdown.addEventListener('change', () => { if (includePassportCheckbox.checked) regenerateField('passport'); });
+
+
+    // Individual Field Buttons (Refresh / Copy) using Event Delegation
+    dataContainer.addEventListener('click', (event) => {
+        const target = event.target.closest('button'); // Find the nearest button ancestor
+        if (!target) return; // Exit if click wasn't on or inside a button
+
+        // Refresh Button
+        if (target.classList.contains('refresh-field')) {
+            const fieldName = target.dataset.field;
+            if (fieldName) {
+                regenerateField(fieldName);
+            }
+        }
+
+        // Copy Button
+        if (target.classList.contains('copy-field')) {
+            const fieldName = target.dataset.field;
+            const valueElement = document.getElementById(fieldName);
+            if (fieldName && valueElement) {
+                let textToCopy = '';
+                 // Handle potential multiline elements like address and credit card
+                if (fieldName === 'address' || fieldName === 'cc') {
+                    textToCopy = currentProfile[fieldName] || ''; // Get raw value which includes \n
+                } else {
+                     textToCopy = valueElement.textContent;
+                }
+                copyToClipboard(textToCopy.trim());
+            }
+        }
+    });
+
+    // Copy All Button
+    copyAllBtn.addEventListener('click', () => {
+        const textToCopy = formatProfileForExport('txt'); // Use TXT format for easy pasting
+        copyToClipboard(textToCopy);
+    });
+
+    // Export Buttons
+    exportTxtBtn.addEventListener('click', () => {
+        const content = formatProfileForExport('txt');
+        downloadFile('PrivacyNano_Profile.txt', content, 'text/plain');
+    });
+
+    exportJsonBtn.addEventListener('click', () => {
+        const content = formatProfileForExport('json');
+        downloadFile('PrivacyNano_Profile.json', content, 'application/json');
+    });
+
+    exportHtmlBtn.addEventListener('click', () => {
+        const content = formatProfileForExport('html');
+        downloadFile('PrivacyNano_Profile.html', content, 'text/html');
+    });
+
+
+    // --------------------------
+    // Initial Load
+    // --------------------------
+    document.addEventListener('DOMContentLoaded', () => {
+        generateProfile(); // Generate initial data on load
+    });
+
+  </script>
+</body>
+</html>
